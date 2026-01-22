@@ -3,7 +3,7 @@ dataset:
     n: [16384]
     d1: [400]
     d2: [400]
-    iid: [true, false]
+    iid: [true]
     n_blocks: [16]
     noise: [0.1]
 
@@ -12,7 +12,8 @@ solver:
     n_workers: [16]
     batch_size: [32]
     lr: [1e-3]
-    moments: [false]
+    adam: [false]
 
 n_repetitions: 1
-timeout: 60
+timeout: 100
+no-cache: true

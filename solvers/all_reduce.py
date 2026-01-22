@@ -15,7 +15,7 @@ class Solver(DistributedSolver):
         "n_workers": [1, 16],
         "batch_size": [32],
         "lr": [1e-3],
-        "moments": [False]
+        "adam": [True, False]
     }
 
     requirements = ["numpy", "torch"]
@@ -55,27 +55,28 @@ class Solver(DistributedSolver):
     ):
         dataloader, model = worker_ctx
 
-        if args.moments:
+        if args.adam:
             optim = torch.optim.Adam(model.parameters(), lr=args.lr)
         else:
             optim = torch.optim.SGD(model.parameters(), lr=args.lr)
 
         criterion = nn.MSELoss()
 
-        for k, (x, y) in enumerate(dataloader):
-            optim.zero_grad()
+        k = 0
+        while True:
+            for x, y in dataloader:
+                optim.zero_grad()
 
-            if k >= n_iter:
-                break
+                k += 1
+                if k > n_iter:
+                    return dict(model=model.module.to("cpu"))
 
-            # Local Computation
-            y_pred = model(x.to(model.device))
-            loss = criterion(y_pred, y.to(model.device))
+                # Local Computation
+                y_pred = model(x.to(model.device))
+                loss = criterion(y_pred, y.to(model.device))
 
-            loss.backward()
-            optim.step()
-
-        return dict(model=model.module.to("cpu"))
+                loss.backward()
+                optim.step()
 
 
 if __name__ == "__main__":

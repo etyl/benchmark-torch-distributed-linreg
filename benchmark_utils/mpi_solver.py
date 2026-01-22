@@ -109,6 +109,9 @@ class DistributedSolver(BaseSolver):
             self.cleanup()
             raise RuntimeError("Timed out waiting for workers to connect.")
 
+        # Warm up by running one iteration
+        self.run(n_iter=1)
+
     def run(self, n_iter):
         if not self.connection:
             raise RuntimeError(
