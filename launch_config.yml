@@ -1,0 +1,18 @@
+dataset:
+  simulated:
+    n: [16384]
+    d1: [400]
+    d2: [400]
+    iid: [true, false]
+    n_blocks: [16]
+    noise: [0.1]
+
+solver:
+  all-reduce:
+    n_workers: [16]
+    batch_size: [32]
+    lr: [1e-3]
+    moments: [false]
+
+n_repetitions: 1
+timeout: 60
