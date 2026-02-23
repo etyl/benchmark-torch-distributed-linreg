@@ -1,3 +1,6 @@
+from collections import defaultdict
+import time
+
 from benchopt.stopping_criterion import SufficientProgressCriterion
 import os
 import torch
@@ -15,14 +18,12 @@ class Solver(DistributedSolver):
         "n_workers": [1, 16],
         "batch_size": [32],
         "lr": [1e-3],
-        "adam": [True, False]
+        "adam": ["true", "false"]
     }
 
     requirements = ["numpy", "torch"]
 
-    stopping_criterion = SufficientProgressCriterion(
-        eps=1e-10, patience=3, strategy="iteration"
-    )
+    sampling_strategy = "run_once"
 
     @classmethod
     def init_worker(cls, args, rank, world_size):
@@ -50,9 +51,13 @@ class Solver(DistributedSolver):
     def worker_run(
         cls, n_iter, worker_ctx, args, rank, world_size
     ):
+        use_cuda = torch.cuda.is_available()
+        if use_cuda:
+            start = torch.cuda.Event(enable_timing=True)
+            end = torch.cuda.Event(enable_timing=True)
         dataloader, model = worker_ctx
 
-        if args.adam:
+        if args.adam == "true":
             optim = torch.optim.Adam(model.parameters(), lr=args.lr)
         else:
             optim = torch.optim.SGD(model.parameters(), lr=args.lr)
@@ -61,14 +66,15 @@ class Solver(DistributedSolver):
 
         device = next(model.parameters()).device
 
+        logs = defaultdict(list)
         k = 0
         while True:
             for x, y in dataloader:
                 optim.zero_grad()
 
                 k += 1
-                if k > n_iter:
-                    return dict(model=model.to("cpu"))
+                if k > 100:
+                    return dict(model=model.to("cpu"), logs=logs)
 
                 y_pred = model(x.to(device))
                 loss = criterion(y_pred, y.to(device))
@@ -76,11 +82,21 @@ class Solver(DistributedSolver):
                 loss.backward()
 
                 # Synchronize gradients
+                if use_cuda:
+                    start.record()
+                else:
+                    t0 = time.perf_counter()
                 with torch.no_grad():
                     for param in model.parameters():
                         if param.grad is not None:
                             dist.all_reduce(param.grad.data, op=dist.ReduceOp.SUM)
                             param.grad.data /= world_size
+                if use_cuda:
+                    end.record()
+                    torch.cuda.synchronize()
+                    logs["comm_time"].append(start.elapsed_time(end)/1000)
+                else:
+                    logs["comm_time"].append(time.perf_counter() - t0)
 
                 optim.step()
 

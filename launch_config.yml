@@ -1,25 +1,25 @@
 dataset:
   simulated:
-    n: [16384]
-    d1: [100]
-    d2: [100]
-    iid: [true]
+    n: [30384]
+    d1: [2000]
+    d2: [2000]
+    iid: ["true"]
     n_blocks: [16]
     noise: [0.1]
 
 solver:
   all-reduce:
     n_workers: [16]
-    batch_size: [32]
+    batch_size: [32, 512, 1024]
     lr: [1e-3]
-    adam: [false]
-  local:
-    n_workers: [16]
-    batch_size: [32]
-    lr: [1e-3]
-    adam: [False]
-    local_steps: [1]
+    adam: ["true"]
+  # local:
+  #   n_workers: [16]
+  #   batch_size: [32]
+  #   lr: [1e-3]
+  #   adam: ["true", "false"]
+  #   local_steps: [1, 4]
 
 n_repetitions: 1
 timeout: 100
-no-cache: true
+# no-cache: true

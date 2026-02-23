@@ -15,7 +15,7 @@ class Solver(DistributedSolver):
         "n_workers": [1, 16],
         "batch_size": [32],
         "lr": [1e-3],
-        "adam": [True, False],
+        "adam": ["true", "false"],
         "local_steps": [1, 4],
     }
 
@@ -53,7 +53,7 @@ class Solver(DistributedSolver):
     ):
         dataloader, model = worker_ctx
 
-        if args.adam:
+        if args.adam == "true":
             optim = torch.optim.Adam(model.parameters(), lr=args.lr)
         else:
             optim = torch.optim.SGD(model.parameters(), lr=args.lr)
@@ -78,10 +78,11 @@ class Solver(DistributedSolver):
                 optim.step()
 
                 # Synchronize models
-                with torch.no_grad():
-                    for param in model.parameters():
-                        dist.all_reduce(param.data, op=dist.ReduceOp.SUM)
-                        param.data /= world_size
+                if k % args.local_steps == 0:
+                    with torch.no_grad():
+                        for param in model.parameters():
+                            dist.all_reduce(param.data, op=dist.ReduceOp.SUM)
+                            param.data /= world_size
 
 
 if __name__ == "__main__":

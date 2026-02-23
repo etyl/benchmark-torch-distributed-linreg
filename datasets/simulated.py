@@ -11,7 +11,7 @@ class Dataset(BaseDataset):
         'n': [16*1024],
         'd1': [400],
         'd2': [400],
-        'iid': [True],
+        'iid': ["true", "false"],
         'n_blocks': [16],
         'noise': [0.1],
     }
@@ -58,7 +58,7 @@ class Dataset(BaseDataset):
         Y = np.vstack(Y_blocks)
 
         # IID version = shuffle samples
-        if self.iid:
+        if self.iid == "true":
             perm = rng.permutation(self.n)
             X = X[perm]
             Y = Y[perm]

@@ -27,7 +27,7 @@ class Objective(BaseObjective):
         y = open_memmap(self.y_path)
         return dict(model=torch.nn.Linear(x.shape[1], y.shape[1], bias=False))
 
-    def evaluate_result(self, model):
+    def evaluate_result(self, model, logs={}):
         x = torch.from_numpy(np.load(self.x_path))
         y = torch.from_numpy(np.load(self.y_path))
         train_loss = _compute_loss(
@@ -35,6 +35,9 @@ class Objective(BaseObjective):
         )
         return {
             "value": train_loss,
+            **{
+                k: sum(v) for k, v in logs.items()
+            }
         }
 
     def get_objective(self):
