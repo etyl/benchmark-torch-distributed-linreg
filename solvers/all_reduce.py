@@ -55,7 +55,8 @@ class Solver(BaseSolver):
     def run(self, _):
         use_cuda = torch.cuda.is_available()
         if use_cuda:
-            start = torch.cuda.Event(enable_timing=True)
+            start_run = torch.cuda.Event(enable_timing=True)
+            start_com = torch.cuda.Event(enable_timing=True)
             end = torch.cuda.Event(enable_timing=True)
 
         optim = torch.optim.Adam(self.model.parameters(), lr=float(self.lr))
@@ -67,6 +68,12 @@ class Solver(BaseSolver):
         k = 0
         while True:
             for x, y in self.dataloader:
+                if use_cuda:
+                    start_run.record()
+                else:
+                    t0_run = time.perf_counter()
+
+
                 optim.zero_grad()
 
                 k += 1
@@ -81,9 +88,9 @@ class Solver(BaseSolver):
 
                 # Synchronize gradients
                 if use_cuda:
-                    start.record()
+                    start_com.record()
                 else:
-                    t0 = time.perf_counter()
+                    t0_com = time.perf_counter()
                 with torch.no_grad():
                     for param in self.model.parameters():
                         if param.grad is not None:
@@ -92,9 +99,11 @@ class Solver(BaseSolver):
                 if use_cuda:
                     end.record()
                     torch.cuda.synchronize()
-                    self.logs["comm_time"].append(start.elapsed_time(end)/1000)
+                    self.logs["comm_time"].append(start_com.elapsed_time(end)/1000)
+                    self.logs["run_time"].append(start_run.elapsed_time(end)/1000)
                 else:
-                    self.logs["comm_time"].append(time.perf_counter() - t0)
+                    self.logs["comm_time"].append(time.perf_counter() - t0_com)
+                    self.logs["run_time"].append(time.perf_counter() - t0_run)
 
                 optim.step()
 

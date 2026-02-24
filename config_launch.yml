@@ -5,15 +5,15 @@ objective:
 dataset:
   simulated:
     n: [30384]
-    d1: [2000]
-    d2: [2000]
+    d1: [4000]
+    d2: [4000]
     iid: ["true"]
     n_blocks: [16]
     noise: [0.1]
 
 solver:
   all-reduce:
-    batch_size: [32, 512, 1024]
+    batch_size: [64, 512, 2048]
     lr: [1e-3]
 
 parallel_config: config_parallel.yml
