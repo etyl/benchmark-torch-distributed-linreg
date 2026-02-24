@@ -13,7 +13,6 @@ dataset:
 
 solver:
   all-reduce:
-    n_workers: [2]
     batch_size: [32, 512, 1024]
     lr: [1e-3]
 
