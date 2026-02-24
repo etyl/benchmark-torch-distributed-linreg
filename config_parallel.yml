@@ -10,3 +10,14 @@ slurm_additional_parameters:
   account: lzs@v100
 slurm_setup:  # sbatch script commands added before the main job
   - module load pytorch-gpu
+
+  # 1. Extract the IP address of the master node
+  - nodes=( $( scontrol show hostnames $SLURM_JOB_NODELIST ) )
+  - nodes_array=($nodes)
+  - head_node=${nodes_array[0]}
+  - head_node_ip=$(srun --nodes=1 --ntasks=1 -w "$head_node" hostname --ip-address)
+  - echo "Master Node IP: $head_node_ip"
+
+  # 2. Export environment variables needed for PyTorch DDP
+  - export MASTER_ADDR=$head_node_ip
+  - export MASTER_PORT=29500  # Any free port
