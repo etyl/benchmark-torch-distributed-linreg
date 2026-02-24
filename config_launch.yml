@@ -1,3 +1,7 @@
+objective:
+  Linear Regression:
+    device: "cuda"
+
 dataset:
   simulated:
     n: [30384]
@@ -9,17 +13,10 @@ dataset:
 
 solver:
   all-reduce:
-    n_workers: [16]
+    n_workers: [2]
     batch_size: [32, 512, 1024]
     lr: [1e-3]
-    adam: ["true"]
-  # local:
-  #   n_workers: [16]
-  #   batch_size: [32]
-  #   lr: [1e-3]
-  #   adam: ["true", "false"]
-  #   local_steps: [1, 4]
 
+parallel_config: config_parallel.yml
 n_repetitions: 1
-timeout: 100
-# no-cache: true
+timeout: 200

@@ -1,83 +1,84 @@
 from collections import defaultdict
 import time
-
-from benchopt.stopping_criterion import SufficientProgressCriterion
+from benchopt import BaseSolver
 import os
 import torch
 import torch.nn as nn
 import torch.distributed as dist
 
-from benchmark_utils.mpi_solver import DistributedSolver
 from benchmark_utils.dataset_utils import get_dataloader
 
 
-class Solver(DistributedSolver):
+def setup_distributed(device):
+    """Maps SLURM variables to PyTorch DDP variables and initializes the process group."""
+    if "SLURM_PROCID" in os.environ:
+        os.environ["RANK"] = os.environ["SLURM_PROCID"]
+        os.environ["LOCAL_RANK"] = os.environ["SLURM_LOCALID"]
+        os.environ["WORLD_SIZE"] = os.environ["SLURM_NTASKS"]
+
+    local_rank = int(os.environ["LOCAL_RANK"])
+    if device.startswith("cuda"):
+        dist.init_process_group(backend="nccl", init_method="env://")
+        torch.cuda.set_device(local_rank)
+    elif device == "cpu":
+        dist.init_process_group(backend="gloo", init_method="env://")
+    else:
+        raise ValueError(f"Unsupported device: {device}")
+
+    # Set the specific GPU for this process
+    return local_rank
+
+
+class Solver(BaseSolver):
     name = "all-reduce"
 
     parameters = {
-        "n_workers": [1, 16],
+        "n_workers": [16],
         "batch_size": [32],
         "lr": [1e-3],
-        "adam": ["true", "false"]
     }
 
-    requirements = ["numpy", "torch"]
+    requirements = ["numpy", "pytorch:pytorch"]
 
     sampling_strategy = "run_once"
 
-    @classmethod
-    def init_worker(cls, args, rank, world_size):
-        torch.manual_seed(0)
-        dataloader = get_dataloader(
-            args.x_path, args.y_path, args.batch_size
+    def set_objective(self, x_path, y_path, device):
+        self.device = device
+        self.local_rank = setup_distributed(device)
+
+        self.dataloader = get_dataloader(
+            x_path, y_path, self.batch_size
         )
-        model = nn.Linear(
-            dataloader.dataset.X.shape[1],
-            dataloader.dataset.Y.shape[1],
+        self.model = nn.Linear(
+            self.dataloader.dataset.X.shape[1],
+            self.dataloader.dataset.Y.shape[1],
             bias=False,
-        )
+        ).to(self.local_rank)
 
-        if args.device == "cpu":
-            pass
-        elif args.device.startswith("cuda"):
-            local_rank = int(os.environ["LOCAL_RANK"])
-            model = model.to(local_rank)
-        else:
-            raise ValueError(f"Unsupported device: {args.device}")
-
-        return dataloader, model
-
-    @classmethod
-    def worker_run(
-        cls, n_iter, worker_ctx, args, rank, world_size
-    ):
+    def run(self, _):
         use_cuda = torch.cuda.is_available()
         if use_cuda:
             start = torch.cuda.Event(enable_timing=True)
             end = torch.cuda.Event(enable_timing=True)
-        dataloader, model = worker_ctx
 
-        if args.adam == "true":
-            optim = torch.optim.Adam(model.parameters(), lr=args.lr)
-        else:
-            optim = torch.optim.SGD(model.parameters(), lr=args.lr)
-
+        optim = torch.optim.Adam(self.model.parameters(), lr=self.lr)
         criterion = nn.MSELoss()
 
-        device = next(model.parameters()).device
+        world_size = int(os.environ["WORLD_SIZE"])
 
-        logs = defaultdict(list)
+        self.logs = defaultdict(list)
         k = 0
         while True:
-            for x, y in dataloader:
+            for x, y in self.dataloader:
                 optim.zero_grad()
 
                 k += 1
                 if k > 100:
-                    return dict(model=model.to("cpu"), logs=logs)
+                    dist.destroy_process_group()
+                    return
 
-                y_pred = model(x.to(device))
-                loss = criterion(y_pred, y.to(device))
+                y_pred = self.model(x.to(self.device))
+                loss = criterion(y_pred, y.to(self.device))
 
                 loss.backward()
 
@@ -87,19 +88,18 @@ class Solver(DistributedSolver):
                 else:
                     t0 = time.perf_counter()
                 with torch.no_grad():
-                    for param in model.parameters():
+                    for param in self.model.parameters():
                         if param.grad is not None:
                             dist.all_reduce(param.grad.data, op=dist.ReduceOp.SUM)
                             param.grad.data /= world_size
                 if use_cuda:
                     end.record()
                     torch.cuda.synchronize()
-                    logs["comm_time"].append(start.elapsed_time(end)/1000)
+                    self.logs["comm_time"].append(start.elapsed_time(end)/1000)
                 else:
-                    logs["comm_time"].append(time.perf_counter() - t0)
+                    self.logs["comm_time"].append(time.perf_counter() - t0)
 
                 optim.step()
 
-
-if __name__ == "__main__":
-    Solver.entry_point()
+    def get_result(self):
+        return self.model.cpu(), self.logs
