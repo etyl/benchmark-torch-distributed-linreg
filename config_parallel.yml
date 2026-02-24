@@ -2,11 +2,12 @@ backend: submitit
 slurm_time: 01:00:00
 slurm_stderr_to_stdout: True
 slurm_additional_parameters:
-  partition: normal,parietal,gpu-best
+  partition: gpu_p2
   ntasks: 2
   gpus-per-task: 1
   cpus-per-task: 10
-  account: hvernina
+  qos: qos_gpu-dev
+  account: 105272@v100
 slurm_setup:  # sbatch script commands added before the main job
   - source ~/miniconda3/etc/profile.d/conda.sh
   - conda activate benchopt-torch
