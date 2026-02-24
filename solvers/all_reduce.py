@@ -99,4 +99,7 @@ class Solver(BaseSolver):
                 optim.step()
 
     def get_result(self):
-        return self.model.cpu(), self.logs
+        return dict(
+            model=self.model.cpu(),
+            logs=self.logs
+        )
