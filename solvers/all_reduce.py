@@ -29,7 +29,6 @@ class Solver(BaseSolver):
     name = "all-reduce"
 
     parameters = {
-        "n_workers": [16],
         "batch_size": [32],
         "lr": [1e-3],
     }
@@ -41,6 +40,8 @@ class Solver(BaseSolver):
     def set_objective(self, x_path, y_path, device):
         self.device = device
         setup_distributed(device)
+        local_rank = int(os.environ["LOCAL_RANK"])
+        torch.cuda.set_device(local_rank)
 
         self.dataloader = get_dataloader(
             x_path, y_path, int(self.batch_size)
@@ -49,7 +50,7 @@ class Solver(BaseSolver):
             self.dataloader.dataset.X.shape[1],
             self.dataloader.dataset.Y.shape[1],
             bias=False,
-        ).to(self.device)
+        ).to(local_rank)
 
     def run(self, _):
         use_cuda = torch.cuda.is_available()

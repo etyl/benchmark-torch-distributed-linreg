@@ -3,9 +3,9 @@ slurm_time: 01:00:00
 slurm_stderr_to_stdout: True
 slurm_additional_parameters:
   partition: gpu_p2
-  ntasks: 2
-  gpus-per-task: 1
-  cpus-per-task: 10
+  nodes: 1
+  tasks-per-node: 1
+  slurm_gpus_per_node: 2
   qos: qos_gpu-dev
   account: lzs@v100
 slurm_setup:  # sbatch script commands added before the main job
