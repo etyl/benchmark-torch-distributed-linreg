@@ -26,3 +26,15 @@ export MASTER_PORT=29500  # Any free port
 
 cd ~/benchmarks/benchmark-torch-distributed-linreg
 python -m benchopt run . --config launch_config.yml
+
+
+#SBATCH --job-name=benchopt-temp
+#SBATCH --partition gpu_p2
+#SBATCH --nodes 2
+#SBATCH --gpus-per-node 1
+#SBATCH --tasks-per-node 1
+#SBATCH --cpus-per-task 12
+#SBATCH --qos qos_gpu-dev
+#SBATCH --account lzs@v100
+
+srun python temp.py

@@ -8,7 +8,9 @@ class Objective(BaseObjective):
     min_benchopt_version = "1.7"
 
     parameters = {
-        "device": ["cpu"]
+        "device": ["cpu"],
+        "slurm_nodes": [1],
+        "slurm_gpus_per_node": [2]
     }
 
     def set_data(self, X, Y):
