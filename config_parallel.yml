@@ -5,7 +5,7 @@ slurm_additional_parameters:
   partition: gpu_p2
   nodes: 1
   tasks-per-node: 1
-  slurm_gpus_per_node: 2
+  gpus-per-node: 2
   qos: qos_gpu-dev
   account: lzs@v100
 slurm_setup:  # sbatch script commands added before the main job
