@@ -5,7 +5,7 @@ import torch
 
 class Objective(BaseObjective):
     name = "Linear Regression"
-    min_benchopt_version = "1.7"
+    min_benchopt_version = "1.8"
 
     parameters = {
         "device": ["cpu"],
@@ -21,8 +21,12 @@ class Objective(BaseObjective):
         return dict(model=torch.nn.Linear(self.X.shape[1], self.Y.shape[1], bias=False))
 
     def evaluate_result(self, model, logs={}):
+        mean_logs = {
+            k: np.mean(v) for k, v in logs.items()
+        }
         return {
-            k: sum(v) for k, v in logs.items()
+            "comm_ratio": mean_logs["comm_time"] / mean_logs["run_time"],
+            **mean_logs
         }
 
     def get_objective(self):

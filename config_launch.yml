@@ -1,7 +1,7 @@
 objective:
   Linear Regression:
     device: "cuda"
-    slurm_nodes: [1]
+    slurm_nodes: [1, 4, 16]
     slurm_gpus_per_node: [2]
 
 dataset:
