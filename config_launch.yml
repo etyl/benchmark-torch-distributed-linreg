@@ -9,9 +9,6 @@ dataset:
     n: [30384]
     d1: [4000]
     d2: [4000]
-    iid: ["true"]
-    n_blocks: [16]
-    noise: [0.1]
 
 solver:
   all-reduce:
