@@ -20,7 +20,7 @@ class Objective(BaseObjective):
 
     def evaluate_result(self, model, logs={}):
         mean_logs = {
-            k: np.mean(v) for k, v in logs.items()
+            k: sum(v) for k, v in logs.items()
         }
         return {
             "comm_ratio": mean_logs["comm_time"] / mean_logs["run_time"],

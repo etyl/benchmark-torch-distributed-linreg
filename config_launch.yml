@@ -12,8 +12,8 @@ solver:
   all-reduce:
     batch_size: [64, 512, 2048]
     lr: [1e-3]
-    slurm_nodes: [1, 4, 16]
-    slurm_gpus_per_node: [2]
+    slurm_nodes: [4]
+    slurm_gpus_per_node: [1]
 
 parallel_config: config_parallel.yml
 n_repetitions: 1

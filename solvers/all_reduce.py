@@ -61,7 +61,8 @@ class Solver(BaseSolver):
         if use_cuda:
             start_run = torch.cuda.Event(enable_timing=True)
             start_com = torch.cuda.Event(enable_timing=True)
-            end = torch.cuda.Event(enable_timing=True)
+            end_run = torch.cuda.Event(enable_timing=True)
+            end_com = torch.cuda.Event(enable_timing=True)
 
         optim = torch.optim.Adam(self.model.parameters(), lr=float(self.lr))
         criterion = nn.MSELoss()
@@ -69,20 +70,27 @@ class Solver(BaseSolver):
         world_size = int(os.environ["WORLD_SIZE"])
 
         self.logs = defaultdict(list)
+
+        if use_cuda:
+            start_run.record()
+        else:
+            t0_run = time.perf_counter()
+
         k = 0
         while True:
             for x, y in self.dataloader:
-                if use_cuda:
-                    start_run.record()
-                else:
-                    t0_run = time.perf_counter()
-
 
                 optim.zero_grad()
 
                 k += 1
                 if k > 100:
-                    dist.destroy_process_group()
+                    if use_cuda:
+                        end_run.record()
+                        torch.cuda.synchronize()
+                        self.logs["run_time"].append(start_run.elapsed_time(end_run)/1000)
+                    else:
+                        self.logs["run_time"].append(time.perf_counter() - t0_run)
+                        dist.destroy_process_group()
                     return
 
                 y_pred = self.model(x.to(self.device))
@@ -95,19 +103,19 @@ class Solver(BaseSolver):
                     start_com.record()
                 else:
                     t0_com = time.perf_counter()
+
                 with torch.no_grad():
                     for param in self.model.parameters():
                         if param.grad is not None:
                             dist.all_reduce(param.grad.data, op=dist.ReduceOp.SUM)
                             param.grad.data /= world_size
+
                 if use_cuda:
-                    end.record()
+                    end_com.record()
                     torch.cuda.synchronize()
-                    self.logs["comm_time"].append(start_com.elapsed_time(end)/1000)
-                    self.logs["run_time"].append(start_run.elapsed_time(end)/1000)
+                    self.logs["comm_time"].append(start_com.elapsed_time(end_com)/1000)
                 else:
                     self.logs["comm_time"].append(time.perf_counter() - t0_com)
-                    self.logs["run_time"].append(time.perf_counter() - t0_run)
 
                 optim.step()
 
