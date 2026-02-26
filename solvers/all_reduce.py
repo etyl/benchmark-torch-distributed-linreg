@@ -16,6 +16,10 @@ def setup_distributed(device):
         os.environ["LOCAL_RANK"] = os.environ["SLURM_LOCALID"]
         os.environ["WORLD_SIZE"] = os.environ["SLURM_NTASKS"]
 
+    # Check if dist is already initialized to avoid reinitialization
+    if dist.is_initialized():
+        return
+
     if device.startswith("cuda"):
         dist.init_process_group(backend="nccl", init_method="env://")
     elif device == "cpu":
