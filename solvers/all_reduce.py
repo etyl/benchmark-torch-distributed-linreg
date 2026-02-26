@@ -70,6 +70,7 @@ class Solver(BaseSolver):
         world_size = int(os.environ["WORLD_SIZE"])
 
         self.logs = defaultdict(list)
+        self.logs["batch_ratio"] = [self.batch_size / self.X.shape[0]]
 
         if use_cuda:
             start_run.record()
