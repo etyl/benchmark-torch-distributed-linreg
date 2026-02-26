@@ -9,15 +9,13 @@ class Plot(BasePlot):
     }
 
     def plot(self, df, dataset):
-        print(df)
-        print(df["dataset_name"])
         df = df[df["dataset_name"].str.contains(dataset, na=False)]
 
         plots = []
         for solver, df_filtered in df.groupby('solver_name'):
             medians = df_filtered.groupby('stop_val').median(numeric_only=True)
-            y = medians["comm_ratio"].values.tolist()
-            x = medians["batch_ratio"].values.tolist()
+            y = medians["objective_comm_ratio"].values.tolist()
+            x = medians["objective_batch_ratio"].values.tolist()
             solver_name = solver.split("[")[0]
             batch_size = solver.split("batch_size=")[1].split(",")[0]
             d1 = df_filtered["dataset_name"].iloc[0]
