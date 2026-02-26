@@ -14,7 +14,7 @@ class Plot(BasePlot):
         plots = []
         for solver, df_solver in df.groupby("solver_name"):
             for dataset_name, df_dataset in df_solver.groupby("dataset_name"):
-                y = df_dataset["objective_comm_ratio"].values.to_list()
+                y = df_dataset["objective_comm_ratio"].values.tolist()
                 solver_name = solver.split("[")[0]
                 batch_size = solver.split("batch_size=")[1].split(",")[0]
                 d1 = dataset_name.split("d1=")[1].split(",")[0]
