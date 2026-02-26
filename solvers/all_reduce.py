@@ -72,6 +72,7 @@ class Solver(BaseSolver):
         self.logs = defaultdict(list)
 
         if use_cuda:
+            torch.cuda.synchronize()
             start_run.record()
         else:
             t0_run = time.perf_counter()
