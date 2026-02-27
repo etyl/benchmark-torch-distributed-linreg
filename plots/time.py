@@ -14,8 +14,8 @@ class Plot(BasePlot):
 
         plot_data = []
         for solver, df_filtered in df.groupby('solver_name'):
-            y = df_filtered['objective_comm_time'].values.tolist()
-            x = list(range(len(y)))
+            y = [df_filtered['objective_comm_time'].values.tolist()]
+            x = [solver]
 
             plot_data.append({
                 "x": x,
