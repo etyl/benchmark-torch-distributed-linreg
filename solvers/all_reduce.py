@@ -119,7 +119,6 @@ class Solver(BaseSolver):
                 # Synchronize gradients
                 if use_cuda:
                     torch.cuda.synchronize()
-                    dist.barrier()
                     start_com.record()
                 t0_com = time.perf_counter()
 
