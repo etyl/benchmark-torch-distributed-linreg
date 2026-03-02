@@ -107,6 +107,7 @@ class Solver(BaseSolver):
         stop_training = False
         while not stop_training:
             for x, y in self.dataloader:
+                print(f"Rank {dist.get_rank()} - Batch {k}")
 
                 optim.zero_grad()
 
@@ -141,6 +142,7 @@ class Solver(BaseSolver):
                 k += 1
                 if k > 100:
                     stop_training = True
+                    break
 
         if use_cuda:
             dist.barrier()
