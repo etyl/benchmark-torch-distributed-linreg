@@ -10,9 +10,9 @@ class Plot(BasePlot):
         "record_device": ["cpu", "gpu"],
     }
 
-    def plot(self, df, objective, dataset):
+    def plot(self, df, objective, dataset, record_device):
         df = df.query(f"objective_name == '{objective}' and dataset_name == '{dataset}'")
-        if self.record_device == "gpu":
+        if record_device == "gpu":
             objective_column = "objective_comm_time"
         else:
             objective_column = "objective_comm_time_cpu"
@@ -30,7 +30,7 @@ class Plot(BasePlot):
 
         return plot_data
 
-    def get_metadata(self, df, objective, dataset):
+    def get_metadata(self, df, objective, dataset, record_device):
         return {
             "title": f"Communication Time\n{objective}\nData: {dataset}",
         }
