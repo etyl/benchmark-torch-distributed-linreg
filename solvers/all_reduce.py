@@ -75,13 +75,7 @@ class Solver(BaseSolver):
 
         self.logs = defaultdict(list)
 
-        # Warmup
-        k = 0
         for x, y in self.dataloader:
-            k += 1
-            if k > 10:
-                break
-
             optim.zero_grad()
 
             y_pred = self.model(x.to(self.device))
@@ -95,6 +89,7 @@ class Solver(BaseSolver):
                         param.grad.data /= world_size
 
             optim.step()
+            break
 
         if use_cuda:
             torch.cuda.synchronize()
@@ -131,6 +126,7 @@ class Solver(BaseSolver):
                 if use_cuda:
                     end_com.record()
                     torch.cuda.synchronize()
+                    dist.barrier()
                     self.logs["comm_time"].append(start_com.elapsed_time(end_com)/1000)
                 else:
                     self.logs["comm_time"].append(time.perf_counter() - t0_com)
@@ -149,7 +145,6 @@ class Solver(BaseSolver):
             self.logs["run_time"].append(start_run.elapsed_time(end_run)/1000)
         else:
             self.logs["run_time"].append(time.perf_counter() - t0_run)
-        dist.destroy_process_group()
 
     def get_result(self):
         return dict(
