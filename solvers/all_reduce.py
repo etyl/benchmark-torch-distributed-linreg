@@ -44,13 +44,7 @@ class Solver(BaseSolver):
     sampling_strategy = "run_once"
 
     def set_objective(self, X, Y, device):
-        self.X = X
-        self.Y = Y
         self.device = device
-        setup_distributed(device)
-        local_rank = int(os.environ["LOCAL_RANK"])
-        torch.cuda.set_device(local_rank)
-
         self.dataloader = get_dataloader(
             X, Y, int(self.batch_size)
         )
@@ -58,10 +52,15 @@ class Solver(BaseSolver):
             self.dataloader.dataset.X.shape[1],
             self.dataloader.dataset.Y.shape[1],
             bias=False,
-        ).to(local_rank)
+        )
 
     def run(self, _):
-        use_cuda = torch.cuda.is_available()
+        setup_distributed(self.device)
+        local_rank = int(os.environ["LOCAL_RANK"])
+        torch.cuda.set_device(local_rank)
+        self.model = self.model.to(self.device)
+
+        use_cuda = self.device.startswith("cuda")
         if use_cuda:
             start_run = torch.cuda.Event(enable_timing=True)
             start_com = torch.cuda.Event(enable_timing=True)
@@ -127,7 +126,6 @@ class Solver(BaseSolver):
                 if use_cuda:
                     end_com.record()
                     torch.cuda.synchronize()
-                    dist.barrier()
                     self.logs["comm_time"].append(start_com.elapsed_time(end_com)/1000)
                 else:
                     self.logs["comm_time"].append(time.perf_counter() - t0_com)
