@@ -6,6 +6,8 @@ import torch
 import torch.nn as nn
 import torch.distributed as dist
 
+from benchmark_utils.dataset_utils import get_dataloader
+
 
 def setup_distributed(device):
     """Maps SLURM variables to PyTorch DDP variables and initializes the process group."""
@@ -41,16 +43,17 @@ class Solver(BaseSolver):
 
     sampling_strategy = "run_once"
 
-    def set_objective(self, dataloader, model, device):
+    def set_objective(self, dataset, model, device):
         self.device = device
-        self.dataloader = dataloader
+        self.dataset = dataset
         self.model = model
 
     def run(self, _):
         setup_distributed(self.device)
         local_rank = int(os.environ["LOCAL_RANK"])
         torch.cuda.set_device(local_rank)
-        self.model = self.model.to(self.device)
+        model = self.model.to(self.device)
+        dataloader = get_dataloader(self.dataset, batch_size=self.batch_size)
 
         use_cuda = self.device.startswith("cuda")
         if use_cuda:
@@ -59,22 +62,22 @@ class Solver(BaseSolver):
             end_run = torch.cuda.Event(enable_timing=True)
             end_com = torch.cuda.Event(enable_timing=True)
 
-        optim = torch.optim.Adam(self.model.parameters(), lr=float(self.lr))
+        optim = torch.optim.Adam(model.parameters(), lr=float(self.lr))
         criterion = nn.MSELoss()
 
         world_size = int(os.environ["WORLD_SIZE"])
 
         self.logs = defaultdict(list)
 
-        for x, y in self.dataloader:
+        for x, y in dataloader:
             optim.zero_grad()
 
-            y_pred = self.model(x.to(self.device))
+            y_pred = model(x.to(self.device))
             loss = criterion(y_pred, y.to(self.device))
             loss.backward()
 
             with torch.no_grad():
-                for param in self.model.parameters():
+                for param in model.parameters():
                     if param.grad is not None:
                         dist.all_reduce(param.grad.data, op=dist.ReduceOp.SUM)
                         param.grad.data /= world_size
@@ -92,12 +95,12 @@ class Solver(BaseSolver):
         k = 0
         stop_training = False
         while not stop_training:
-            for x, y in self.dataloader:
+            for x, y in dataloader:
                 print(f"Rank {dist.get_rank()} - Batch {k}")
 
                 optim.zero_grad()
 
-                y_pred = self.model(x.to(self.device))
+                y_pred = model(x.to(self.device))
                 loss = criterion(y_pred, y.to(self.device))
 
                 loss.backward()
@@ -110,7 +113,7 @@ class Solver(BaseSolver):
                 t0_com = time.perf_counter()
 
                 with torch.no_grad():
-                    for param in self.model.parameters():
+                    for param in model.parameters():
                         if param.grad is not None:
                             dist.all_reduce(param.grad.data, op=dist.ReduceOp.SUM)
                             param.grad.data /= world_size

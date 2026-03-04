@@ -18,8 +18,7 @@ class TorchDataset(Dataset):
         )
 
 
-def get_dataloader(X, Y, batch_size):
-    dataset = TorchDataset(X, Y)
+def get_dataloader(dataset, batch_size):
     sampler = DistributedSampler(dataset)
     dataloader = DataLoader(
         dataset,

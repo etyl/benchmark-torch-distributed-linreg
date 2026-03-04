@@ -6,6 +6,8 @@ import torch
 import torch.nn as nn
 import torch.distributed as dist
 
+from benchmark_utils.dataset_utils import get_dataloader
+
 
 def setup_distributed(device):
     """Maps SLURM variables to PyTorch DDP variables and initializes the process group."""
@@ -41,9 +43,9 @@ class Solver(BaseSolver):
 
     sampling_strategy = "run_once"
 
-    def set_objective(self, dataloader, model, device):
+    def set_objective(self, dataset, model, device):
         self.device = device
-        self.dataloader = dataloader
+        self.dataset = dataset
         self.model = model
 
     def run(self, _):
@@ -51,6 +53,7 @@ class Solver(BaseSolver):
         local_rank = int(os.environ["LOCAL_RANK"])
         torch.cuda.set_device(local_rank)
         model = torch.nn.parallel.DistributedDataParallel(self.model.to(self.device), device_ids=[local_rank])
+        dataloader = get_dataloader(self.dataset, batch_size=self.batch_size)
 
         use_cuda = self.device.startswith("cuda")
         if use_cuda:
@@ -61,7 +64,7 @@ class Solver(BaseSolver):
         criterion = nn.MSELoss()
         self.logs = defaultdict(list)
 
-        for x, y in self.dataloader:
+        for x, y in dataloader:
             optim.zero_grad()
 
             y_pred = model(x.to(self.device))
@@ -80,7 +83,7 @@ class Solver(BaseSolver):
         k = 0
         stop_training = False
         while not stop_training:
-            for x, y in self.dataloader:
+            for x, y in dataloader:
                 print(f"Rank {dist.get_rank()} - Batch {k}")
 
                 optim.zero_grad()
