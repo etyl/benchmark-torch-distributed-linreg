@@ -18,3 +18,5 @@ slurm_setup:  # sbatch script commands added before the main job
   # 2. Export environment variables needed for PyTorch DDP
   - export MASTER_ADDR=$head_node
   - export MASTER_PORT=$(shuf -i 20000-65000 -n 1)  # random port
+  - export NCCL_DEBUG=INFO
+  - export NCCL_DEBUG_SUBSYS=INIT,TUNING
