@@ -33,7 +33,7 @@ class Solver(BaseSolver):
     name = "ddp"
 
     parameters = {
-        "batch_size": [32],
+        "global_batch_size": [32],
         "lr": [1e-3],
         "slurm_nodes": [1],
         "slurm_gpus_per_node": [2]
@@ -51,9 +51,10 @@ class Solver(BaseSolver):
     def run(self, _):
         setup_distributed(self.device)
         local_rank = int(os.environ["LOCAL_RANK"])
+        world_size = int(os.environ["WORLD_SIZE"])
         torch.cuda.set_device(local_rank)
         model = torch.nn.parallel.DistributedDataParallel(self.model.to(self.device), device_ids=[local_rank])
-        dataloader = get_dataloader(self.dataset, batch_size=self.batch_size)
+        dataloader = get_dataloader(self.dataset, batch_size=self.global_batch_size//world_size)
 
         use_cuda = self.device.startswith("cuda")
         if use_cuda:
@@ -95,7 +96,7 @@ class Solver(BaseSolver):
                 optim.step()
 
                 k += 1
-                if k > 100:
+                if k > 40:
                     stop_training = True
                     break
 

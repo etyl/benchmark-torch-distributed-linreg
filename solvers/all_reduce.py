@@ -37,7 +37,7 @@ class Solver(BaseSolver):
     name = "all-reduce"
 
     parameters = {
-        "batch_size": [32],
+        "global_batch_size": [32],
         "lr": [1e-3],
         "slurm_nodes": [1],
         "slurm_gpus_per_node": [2]
@@ -55,9 +55,10 @@ class Solver(BaseSolver):
     def run(self, _):
         setup_distributed(self.device)
         local_rank = int(os.environ["LOCAL_RANK"])
+        world_size = int(os.environ["WORLD_SIZE"])
         torch.cuda.set_device(local_rank)
         model = self.model.to(self.device)
-        dataloader = get_dataloader(self.dataset, batch_size=self.batch_size)
+        dataloader = get_dataloader(self.dataset, batch_size=self.global_batch_size//world_size)
 
         use_cuda = self.device.startswith("cuda")
         if use_cuda:
@@ -69,7 +70,7 @@ class Solver(BaseSolver):
         optim = torch.optim.Adam(model.parameters(), lr=float(self.lr))
         criterion = nn.MSELoss()
 
-        world_size = int(os.environ["WORLD_SIZE"])
+
 
         self.logs = defaultdict(list)
 
@@ -133,7 +134,7 @@ class Solver(BaseSolver):
                 optim.step()
 
                 k += 1
-                if k > 100:
+                if k > 40:
                     stop_training = True
                     break
 
