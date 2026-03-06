@@ -11,5 +11,5 @@
 
 
 module load pytorch-gpu
-python -m benchopt run . --config launch_config.yml --collect
+python -m benchopt run . --config config_launch.yml --collect
 

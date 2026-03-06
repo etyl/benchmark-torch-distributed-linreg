@@ -5,7 +5,7 @@ class Plot(BasePlot):
     name = "Communication Ratio"
     type = "scatter"
     options = {
-        "dataset": ['simulated']
+        "dataset": ['mlp']
     }
 
     def plot(self, df, dataset):
