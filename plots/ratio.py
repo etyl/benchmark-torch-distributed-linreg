@@ -19,10 +19,10 @@ class Plot(BasePlot):
                 y = df_dataset["objective_comm_ratio"].values.tolist()
                 solver_name = solver.split("[")[0]
                 batch_size = solver.split("batch_size=")[1].split(",")[0]
-                d1 = dataset_name.split("d1=")[1].split(",")[0]
-                solver_label = f"{solver_name}[batch_size={batch_size},d1={d1}]"
+                d = dataset_name.split("d=")[1].split(",")[0]
+                solver_label = f"{solver_name}[batch_size={batch_size},d={d}]"
                 curve_data = {
-                    "x": [int(batch_size) / int(d1)] * len(y),
+                    "x": [int(batch_size) / int(d)] * len(y),
                     "y": y,
                     "label": solver_label,
                     **self.get_style(solver_label)
