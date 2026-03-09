@@ -9,7 +9,7 @@ class Plot(BasePlot):
         "batch_size": ["local", "global"],
     }
 
-    def plot(self, df, dataset):
+    def plot(self, df, dataset, batch_size):
         df = df[df["dataset_name"].str.contains(dataset, na=False)]
 
         plots = []
@@ -22,14 +22,14 @@ class Plot(BasePlot):
                 global_batch_size = int(solver.split("batch_size=")[1].split(",")[0])
                 n_nodes = int(solver.split("n_nodes=")[1].split(",")[0])
                 local_batch_size = global_batch_size // n_nodes
-                if self.batch_size == "local":
-                    batch_size = local_batch_size
+                if batch_size == "local":
+                    batch_size_val = local_batch_size
                 else:
-                    batch_size = global_batch_size
+                    batch_size_val = global_batch_size
                 d = dataset_name.split("d=")[1].split(",")[0]
-                solver_label = f"{solver_name}[batch_size={batch_size},d={d},nodes={n_nodes}]"
+                solver_label = f"{solver_name}[batch_size={batch_size_val},d={d},nodes={n_nodes}]"
                 curve_data = {
-                    "x": [int(batch_size) / int(d)] * len(y),
+                    "x": [batch_size_val / int(d)] * len(y),
                     "y": y,
                     "label": solver_label,
                     **self.get_style(solver_label)
@@ -39,7 +39,7 @@ class Plot(BasePlot):
 
         return plots
 
-    def get_metadata(self, df, dataset):
+    def get_metadata(self, df, dataset, batch_size):
         title = f"Communication Ratio\nData: {dataset} "
         return {
             "title": title,
