@@ -5,7 +5,8 @@ class Plot(BasePlot):
     name = "Communication Ratio"
     type = "scatter"
     options = {
-        "dataset": ['mlp']
+        "dataset": ['mlp'],
+        "batch_size": ["local", "global"],
     }
 
     def plot(self, df, dataset):
@@ -18,9 +19,15 @@ class Plot(BasePlot):
                     continue
                 y = df_dataset["objective_comm_ratio"].values.tolist()
                 solver_name = solver.split("[")[0]
-                batch_size = solver.split("batch_size=")[1].split(",")[0]
+                global_batch_size = int(solver.split("batch_size=")[1].split(",")[0])
+                n_nodes = int(solver.split("n_nodes=")[1].split(",")[0])
+                local_batch_size = global_batch_size // n_nodes
+                if self.batch_size == "local":
+                    batch_size = local_batch_size
+                else:
+                    batch_size = global_batch_size
                 d = dataset_name.split("d=")[1].split(",")[0]
-                solver_label = f"{solver_name}[batch_size={batch_size},d={d}]"
+                solver_label = f"{solver_name}[batch_size={batch_size},d={d},nodes={n_nodes}]"
                 curve_data = {
                     "x": [int(batch_size) / int(d)] * len(y),
                     "y": y,
