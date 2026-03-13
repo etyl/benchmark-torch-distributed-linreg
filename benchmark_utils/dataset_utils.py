@@ -1,21 +1,5 @@
-import torch
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
-
-
-class TorchDataset(Dataset):
-    def __init__(self, X, Y):
-        self.X = X
-        self.Y = Y
-
-    def __len__(self):
-        return self.X.shape[0]
-
-    def __getitem__(self, idx):
-        return (
-            torch.tensor(self.X[idx], dtype=torch.float32),
-            torch.tensor(self.Y[idx], dtype=torch.float32)
-        )
 
 
 def get_dataloader(dataset, batch_size):
