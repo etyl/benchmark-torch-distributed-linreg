@@ -18,7 +18,6 @@ solver:
   #   slurm_nodes: [4]
   #   slurm_gpus_per_node: [1]
 
-data_dir: /lustre/fswork/projects/rech/lzs/uhq13gg/benchmark-allreduce
 parallel_config: config_parallel_nanogpt.yml
 n_repetitions: 1
 timeout: 100000
