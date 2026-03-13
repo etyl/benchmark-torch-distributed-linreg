@@ -135,7 +135,7 @@ class Dataset(BaseDataset):
 
     name = "nanogpt"
     parameters = {
-        'n_chunks': [104],
+        'n_chunks': [4],
     }
 
     # List of packages needed to run the dataset. See the corresponding
