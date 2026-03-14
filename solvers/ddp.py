@@ -49,10 +49,9 @@ class Solver(BaseSolver):
     def run(self, _):
         setup_distributed(self.device)
         local_rank = int(os.environ["LOCAL_RANK"])
-        world_size = int(os.environ["WORLD_SIZE"])
         torch.cuda.set_device(local_rank)
         model = torch.nn.parallel.DistributedDataParallel(self.model.to(device=self.device), device_ids=[local_rank])
-        dataloader = get_dataloader(self.dataset, batch_size=self.local_batch_size//world_size)
+        dataloader = get_dataloader(self.dataset, batch_size=self.local_batch_size)
 
         use_cuda = self.device.startswith("cuda")
         if use_cuda:
