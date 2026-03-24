@@ -12,6 +12,11 @@ solver:
     lr: [1e-3]
     slurm_nodes: [2,4,8,16]
     slurm_gpus_per_node: [1]
+  all-reduce-nolock:
+    local_batch_size: [16]
+    lr: [1e-3]
+    slurm_nodes: [2,4,8,16]
+    slurm_gpus_per_node: [1]
   ddp:
     local_batch_size: [16]
     lr: [1e-3]
