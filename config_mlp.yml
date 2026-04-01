@@ -13,15 +13,15 @@ solver:
   all-reduce:
     local_batch_size: [8000]
     lr: [1e-3]
-    slurm_nodes: [2,4,8,16,32]
+    slurm_gres: ["gpu:2", "gpu:4", "gpu:8", "gpu:16", "gpu:32"],
   all-reduce-nolock:
     local_batch_size: [8000]
     lr: [1e-3]
-    slurm_nodes: [2,4,8,16,32]
+    slurm_gres: ["gpu:2", "gpu:4", "gpu:8", "gpu:16", "gpu:32"],
   ddp:
     local_batch_size: [8000]
     lr: [1e-3]
-    slurm_nodes: [2,4,8,16,32]
+    slurm_gres: ["gpu:2", "gpu:4", "gpu:8", "gpu:16", "gpu:32"],
 
 parallel_config: config_parallel.yml
 n_repetitions: 5

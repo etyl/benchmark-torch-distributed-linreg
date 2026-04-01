@@ -33,7 +33,7 @@ class Solver(BaseSolver):
     parameters = {
         "local_batch_size": [32],
         "lr": [1e-3],
-        "slurm_nodes": [1],
+        "slurm_gres": ["gpu:2"],
     }
 
     requirements = ["pytorch:pytorch"]
