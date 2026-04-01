@@ -5,21 +5,23 @@ objective:
 dataset:
   mlp:
     n: [131072]
-    d: [2000, 4000, 8000]
-    layers: [1]
+    d: [2000, 4000]
+    layers: [1, 4]
     bias: [False]
 
 solver:
   all-reduce:
-    local_batch_size: [256, 1024, 4096]
+    local_batch_size: [8000]
     lr: [1e-3]
-    slurm_nodes: [2,4,8]
-    slurm_gpus_per_node: [1]
-  # ddp:
-  #   local_batch_size: [256, 1024, 4096, 8192]
-  #   lr: [1e-3]
-  #   slurm_nodes: [4]
-  #   slurm_gpus_per_node: [1]
+    slurm_nodes: [2,4,8,16,32]
+  all-reduce-nolock:
+    local_batch_size: [8000]
+    lr: [1e-3]
+    slurm_nodes: [2,4,8,16,32]
+  ddp:
+    local_batch_size: [8000]
+    lr: [1e-3]
+    slurm_nodes: [2,4,8,16,32]
 
 parallel_config: config_parallel.yml
 n_repetitions: 5

@@ -8,20 +8,17 @@ dataset:
 
 solver:
   all-reduce:
-    local_batch_size: [16]
+    local_batch_size: [12]
     lr: [1e-3]
-    slurm_nodes: [2,4,8,16]
-    slurm_gpus_per_node: [1]
+    slurm_nodes: [2,4,8,16,32]
   all-reduce-nolock:
-    local_batch_size: [16]
+    local_batch_size: [12]
     lr: [1e-3]
-    slurm_nodes: [2,4,8,16]
-    slurm_gpus_per_node: [1]
+    slurm_nodes: [2,4,8,16,32]
   ddp:
-    local_batch_size: [16]
+    local_batch_size: [12]
     lr: [1e-3]
-    slurm_nodes: [2,4,8,16]
-    slurm_gpus_per_node: [1]
+    slurm_nodes: [2,4,8,16,32]
 
 parallel_config: config_parallel_nanogpt.yml
 n_repetitions: 1

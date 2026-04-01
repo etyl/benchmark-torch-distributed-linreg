@@ -39,7 +39,6 @@ class Solver(BaseSolver):
         "local_batch_size": [32],
         "lr": [1e-3],
         "slurm_nodes": [1],
-        "slurm_gpus_per_node": [2]
     }
 
     requirements = ["pytorch:pytorch"]
