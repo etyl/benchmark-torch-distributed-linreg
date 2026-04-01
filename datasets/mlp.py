@@ -25,11 +25,11 @@ class MLPDataset(torch.utils.data.Dataset):
 class MLP(nn.Module):
     def __init__(self, d, layers=1, bias=False):
         super().__init__()
-        layers = []
-        for _ in range(self.layers):
-            layers.append(nn.Linear(self.d, self.d, bias=self.bias))
-            layers.append(nn.ReLU())
-        self.model = nn.Sequential(*layers)
+        layer_list = []
+        for _ in range(layers):
+            layer_list.append(nn.Linear(self.d, self.d, bias=self.bias))
+            layer_list.append(nn.ReLU())
+        self.model = nn.Sequential(*layer_list)
         self.criterion = nn.MSELoss()
 
     def forward(self, x, y):
