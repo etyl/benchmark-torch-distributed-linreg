@@ -2,9 +2,10 @@ backend: submitit
 slurm_time: 00:10:00
 slurm_stderr_to_stdout: True
 slurm_additional_parameters:
+  partition: gpu_p13
   tasks-per-node: 1
+  gpus-per-node: 4
   cpus-per-gpu: 10
-  nodes: 1-32
   qos: qos_gpu-t3
   account: lzs@v100
 slurm_setup:  # sbatch script commands added before the main job
