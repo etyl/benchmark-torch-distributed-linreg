@@ -25,6 +25,7 @@ class MLPDataset(torch.utils.data.Dataset):
 class MLP(nn.Module):
     def __init__(self, d, layers=1, bias=False):
         super().__init__()
+        self.d = d
         layer_list = []
         for _ in range(layers):
             layer_list.append(nn.Linear(self.d, self.d, bias=self.bias))
