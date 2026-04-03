@@ -111,7 +111,7 @@ class Solver(BaseSolver):
                 optim.step()
 
                 k += 1
-                if k > 40:
+                if k > 20:
                     stop_training = True
                     break
 

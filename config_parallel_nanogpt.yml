@@ -1,5 +1,5 @@
 backend: submitit
-slurm_time: 00:20:00
+slurm_time: 00:40:00
 slurm_stderr_to_stdout: True
 slurm_additional_parameters:
   partition: gpu_p13
