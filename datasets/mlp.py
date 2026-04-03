@@ -37,7 +37,7 @@ class MLP(nn.Module):
     def forward(self, x, y):
         y_pred = self.model(x)
         loss = self.criterion(y_pred, y)
-        return loss
+        return loss, None
 
 
 class Dataset(BaseDataset):
