@@ -29,7 +29,7 @@ class Plot(BasePlot):
                 run_times_ddp = df_filtered[df_filtered["solver_name"].str.contains("ddp")]["objective_run_time"].dropna().values.tolist()
                 communication_ratio = [comm_time / run_time for comm_time, run_time in zip(communication_times, run_times) if run_time > 0]
                 comm_times_ddp = [communication_times[i] - (run_times[i] - run_times_ddp[i]) for i in range(len(run_times_ddp))]
-                communication_ratio_ddp = [comm_time / run_time for comm_time, run_time in zip(comm_times_ddp, run_times_ddp) if run_time > 0]
+                communication_ratio_ddp = [max(0, comm_time) / run_time for comm_time, run_time in zip(comm_times_ddp, run_times_ddp) if run_time > 0]
 
                 dataset_label = dataset.split('[')[0]
                 plot_data.append({
