@@ -4,46 +4,51 @@ import re
 
 class Plot(BasePlot):
     name = "Communication Ratio"
-    type = "scatter"
+    type = "boxplot"
     options = {
-        "dataset": ['mlp'],
-        "batch_size": ["local", "global"],
     }
 
-    def plot(self, df, dataset, batch_size):
-        df = df[df["dataset_name"].str.contains(dataset, na=False)]
+    def plot(self, df):
+        plot_data = []
 
-        plots = []
-        for solver, df_solver in df.groupby("solver_name"):
-            for dataset_name, df_dataset in df_solver.groupby("dataset_name"):
-                if "objective_comm_ratio" not in df_dataset.columns:
-                    continue
-                y = df_dataset["objective_comm_ratio"].values.tolist()
-                solver_name = solver.split("[")[0]
-                local_batch_size = int(re.search(r"batch_size=(\d+)", solver).group(1))
-                n_nodes = int(re.search(r"slurm_nodes=(\d+)", solver).group(1))
-                global_batch_size = local_batch_size * n_nodes
-                if batch_size == "local":
-                    batch_size_val = local_batch_size
-                else:
-                    batch_size_val = global_batch_size
-                d = dataset_name.split("d=")[1].split(",")[0]
-                solver_label = f"{solver_name}[batch_size={batch_size_val},d={d},nodes={n_nodes}]"
-                curve_data = {
-                    "x": [batch_size_val / int(d)] * len(y),
-                    "y": y,
-                    "label": solver_label,
-                    **self.get_style(solver_label)
-                }
+        solvers = df['solver_name'].unique()
+        datasets = df['dataset_name'].unique()
+        all_reduce_solvers = [solver for solver in solvers if 'all-reduce' in solver]
+        all_reduce_solvers.sort(key=lambda s: int(s.split('slurm_nodes=')[1].split(']')[0]))
 
-                plots.append(curve_data)
+        for solver in all_reduce_solvers:
+            n_nodes = re.search(r'slurm_nodes=(\d+)', solver).group(1)
+            solver_params = solver.split('[')[1]
+            df_solver = df[df['solver_name'].str.contains(solver_params)]
 
-        return plots
+            for dataset in datasets:
+                df_filtered = df_solver[df_solver['dataset_name'] == dataset]
 
-    def get_metadata(self, df, dataset, batch_size):
-        title = f"Communication Ratio\nData: {dataset} "
+                communication_times = df_filtered[df_filtered["solver_name"].str.contains("all-reduce")]["objective_comm_time"].dropna().values.tolist()
+                run_times = df_filtered[df_filtered["solver_name"].str.contains("all-reduce-nolock")]["objective_run_time"].dropna().values.tolist()
+                run_times_ddp = df_filtered[df_filtered["solver_name"].str.contains("ddp")]["objective_run_time"].dropna().values.tolist()
+                communication_ratio = [comm_time / run_time for comm_time, run_time in zip(communication_times, run_times) if run_time > 0]
+                comm_times_ddp = [communication_times[i] - (run_times[i] - run_times_ddp[i]) for i in range(len(run_times_ddp))]
+                communication_ratio_ddp = [comm_time / run_time for comm_time, run_time in zip(comm_times_ddp, run_times_ddp) if run_time > 0]
+
+                dataset_label = dataset.split('[')[0]
+                plot_data.append({
+                    "y": [communication_ratio],
+                    "x": [f"{n_nodes} nodes"],
+                    "label": f"{dataset_label}",
+                    "color": self.get_style(dataset_label)["color"],
+                })
+                plot_data.append({
+                    "y": [communication_ratio_ddp],
+                    "x": [f"{n_nodes} nodes (DDP)"],
+                    "label": f"{dataset_label} (DDP)",
+                    "color": self.get_style(f"{dataset_label} (DDP)")["color"],
+                })
+
+        return plot_data
+
+    def get_metadata(self, df):
         return {
-            "title": title,
-            "xlabel": "Batch Ratio",
-            "ylabel": "Communication Ratio",
+            "title": "Communication Ratio",
+            "ylabel": "Communication Time (% of Total Time)",
         }
