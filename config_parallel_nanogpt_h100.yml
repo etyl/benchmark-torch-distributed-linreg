@@ -6,7 +6,6 @@ slurm_additional_parameters:
   tasks-per-node: 1
   gpus-per-node: 4
   cpus-per-gpu: 10
-  qos: qos_gpu-t3
   account: lzs@h100
   constraint: h100
 slurm_setup:  # sbatch script commands added before the main job
