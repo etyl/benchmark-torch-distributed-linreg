@@ -1,8 +1,6 @@
 import torch
 import torch.distributed as dist
-
-from benchmark_utils.dataset_utils import get_dataloader
-
+from torch.utils.data import DataLoader
 
 
 def _is_memory_error(err):
@@ -24,7 +22,13 @@ def _clear_probe_state(model, device):
 def _probe_batch_size(model, dataset, batch_size, device):
     ok = True
     try:
-        probe_loader = get_dataloader(dataset, batch_size=batch_size)
+        probe_loader = DataLoader(
+            dataset,
+            batch_size=batch_size,
+            shuffle=False,
+            num_workers=0
+        )
+
         batch = next(iter(probe_loader))
         batch = [x.to(device) for x in batch]
         model.zero_grad(set_to_none=True)
