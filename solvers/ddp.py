@@ -6,6 +6,8 @@ import torch
 import torch.distributed as dist
 
 from benchmark_utils.dataset_utils import get_dataloader
+from benchmark_utils.batch_size_probe import get_max_batch_size
+
 
 
 def setup_distributed(device):
@@ -31,7 +33,6 @@ class Solver(BaseSolver):
     name = "ddp"
 
     parameters = {
-        "local_batch_size": [32],
         "lr": [1e-3],
         "slurm_nodes": [2]
     }
@@ -50,7 +51,8 @@ class Solver(BaseSolver):
         local_rank = int(os.environ["LOCAL_RANK"])
         torch.cuda.set_device(local_rank)
         model = torch.nn.parallel.DistributedDataParallel(self.model.to(device=self.device), device_ids=[local_rank])
-        dataloader = get_dataloader(self.dataset, batch_size=self.local_batch_size)
+        selected_batch_size = get_max_batch_size(model, self.dataset, self.device)
+        dataloader = get_dataloader(self.dataset, batch_size=selected_batch_size)
 
         use_cuda = self.device.startswith("cuda")
         if use_cuda:

@@ -8,15 +8,12 @@ dataset:
 
 solver:
   all-reduce:
-    local_batch_size: [12]
     lr: [1e-3]
     slurm_nodes: [1, 2, 4, 8]
   all-reduce-nolock:
-    local_batch_size: [12]
     lr: [1e-3]
     slurm_nodes: [1, 2, 4, 8]
   ddp:
-    local_batch_size: [12]
     lr: [1e-3]
     slurm_nodes: [1, 2, 4, 8]
 

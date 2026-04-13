@@ -5,14 +5,13 @@ import torch
 
 
 class MLPDataset(torch.utils.data.Dataset):
-    def __init__(self, d, n):
+    def __init__(self, d):
         self.d = d
-        self.n = n
         rng = np.random.RandomState(42)
         self.W_linear = rng.randn(self.d, self.d)
 
     def __len__(self):
-        return self.n
+        return 1_000_000_000
 
     def __getitem__(self, idx):
         if isinstance(idx, int):
@@ -44,14 +43,12 @@ class Dataset(BaseDataset):
     name = "mlp"
 
     parameters = {
-        'n': [16*1024],
         'd': [400],
         'layers': [1],
-        'bias': [False],
     }
     requirements = ["numpy"]
 
     def get_data(self):
-        dataset = MLPDataset(self.d, self.n)
-        model = MLP(self.d, self.layers, self.bias)
+        dataset = MLPDataset(self.d)
+        model = MLP(self.d, self.layers)
         return dict(dataset=dataset, model=model)

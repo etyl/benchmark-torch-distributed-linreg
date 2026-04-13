@@ -3,7 +3,7 @@ import re
 
 
 class Plot(BasePlot):
-    name = "Communication Ratio"
+    name = "communication_ratio"
     type = "boxplot"
     options = {
     }
@@ -31,18 +31,17 @@ class Plot(BasePlot):
                 comm_times_ddp = [communication_times[i] - (run_times[i] - run_times_ddp[i]) for i in range(len(run_times_ddp))]
                 communication_ratio_ddp = [max(0, comm_time) / run_time for comm_time, run_time in zip(comm_times_ddp, run_times_ddp) if run_time > 0]
 
-                dataset_label = dataset.split('[')[0]
                 plot_data.append({
                     "y": [communication_ratio],
                     "x": [f"{n_nodes} nodes"],
-                    "label": f"{dataset_label}",
-                    "color": self.get_style(dataset_label)["color"],
+                    "label": dataset,
+                    "color": self.get_style(dataset)["color"],
                 })
                 plot_data.append({
                     "y": [communication_ratio_ddp],
                     "x": [f"{n_nodes} nodes (DDP)"],
-                    "label": f"{dataset_label} (DDP)",
-                    "color": self.get_style(f"{dataset_label} (DDP)")["color"],
+                    "label": f"{dataset}",
+                    "color": self.get_style(f"{dataset}")["color"],
                 })
 
         return plot_data
