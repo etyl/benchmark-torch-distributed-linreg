@@ -8,6 +8,7 @@ slurm_additional_parameters:
   cpus-per-gpu: 10
   qos: qos_gpu-t3
   account: lzs@h100
+  constraint: h100
 slurm_setup:  # sbatch script commands added before the main job
   - module load pytorch-gpu
 
