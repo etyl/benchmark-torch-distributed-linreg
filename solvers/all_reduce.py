@@ -37,7 +37,7 @@ class Solver(BaseSolver):
     name = "all-reduce"
 
     parameters = {
-        "local_batch_size": -1,
+        "local_batch_size": [-1],
         "lr": [1e-3],
         "slurm_nodes": [2]
     }
