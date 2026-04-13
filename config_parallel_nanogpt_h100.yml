@@ -5,10 +5,12 @@ slurm_additional_parameters:
   partition: gpu_p6
   tasks-per-node: 1
   gpus-per-node: 4
-  cpus-per-gpu: 10
+  cpus-per-gpu: 20
   account: lzs@h100
   constraint: h100
 slurm_setup:  # sbatch script commands added before the main job
+  - module purge
+  - module load arch/h100
   - module load pytorch-gpu
 
   # 1. Extract the IP address of the master node
