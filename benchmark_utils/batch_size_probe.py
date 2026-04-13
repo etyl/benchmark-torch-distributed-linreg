@@ -47,8 +47,8 @@ def get_max_batch_size(model, dataset, device):
     last_valid = 0
 
     while True:
-        print(f"Probing batch_size={batch_size} on rank {dist.get_rank()}")
-        batch_valid = _probe_batch_size(model, dataset, batch_size, device)
+        print(f"Probing batch_size={batch_size+1} on rank {dist.get_rank()}")
+        batch_valid = _probe_batch_size(model, dataset, batch_size+1, device)
 
         if not batch_valid:
             break
