@@ -1,0 +1,23 @@
+backend: submitit
+slurm_time: 00:20:00
+slurm_stderr_to_stdout: True
+slurm_additional_parameters:
+  partition: gpu_p13
+  tasks-per-node: 1
+  gpus-per-node: 4
+  cpus-per-gpu: 10
+  qos: qos_gpu-t3
+  account: lzs@v100
+slurm_setup:  # sbatch script commands added before the main job
+  - module load pytorch-gpu
+
+  # 1. Extract the IP address of the master node
+  - nodes=( $( scontrol show hostnames $SLURM_JOB_NODELIST ) )
+  - head_node=${nodes[0]}
+  - 'echo "Master Node Hostname: $head_node"'
+
+  # 2. Export environment variables needed for PyTorch DDP
+  - export MASTER_ADDR=$head_node
+  - export MASTER_PORT=$(shuf -i 20000-65000 -n 1)  # random port
+  - export NCCL_DEBUG=INFO
+  - export NCCL_DEBUG_SUBSYS=INIT,TUNING
