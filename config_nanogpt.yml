@@ -20,6 +20,6 @@ solver:
     lr: [1e-3]
     slurm_nodes: [1, 2, 4, 8]
 
-parallel_config: config_parallel_nanogpt.yml
+parallel_config: config_parallel_nanogpt_h100.yml
 n_repetitions: 5
 timeout: 100000
