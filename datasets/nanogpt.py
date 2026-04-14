@@ -143,8 +143,7 @@ class Dataset(BaseDataset):
     requirements = ["huggingface_hub"]
 
     def get_data(self):
-        print("Get data")
-
+        print("Getting data")
         data_dir = get_data_path("fineweb10B")
         download_data(data_dir, n_chunks=self.n_chunks)
 
@@ -154,6 +153,7 @@ class Dataset(BaseDataset):
             # max_seq_len=4*64*1024 - This is for Rotary Positional Embedding
         )
         model = GPT(config)
+        print("Returning data")
 
         # The dictionary defines the keyword arguments for `Objective.set_data`
         return dict(

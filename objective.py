@@ -11,6 +11,7 @@ class Objective(BaseObjective):
     }
 
     def set_data(self, dataset, model):
+        print("Setting data")
         self.dataset = dataset
         self.model = model
 
