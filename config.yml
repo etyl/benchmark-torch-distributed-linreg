@@ -1,2 +1,17 @@
 benchmark-torch-distributed-linreg:
   data_home: /lustre/fswork/projects/rech/lzs/uhq13gg/benchmark-allreduce
+
+  plot_configs:
+    Communication Ratio:
+      plot_kind: communication_ratio
+      scale: linear
+    Run Time:
+      metrics_objective: all-reduce[device=cuda]
+      metrics_metric: run_time
+      plot_kind: metrics
+      scale: linear
+    Communication Time:
+      metrics_objective: all-reduce[device=cuda]
+      metrics_metric: comm_time
+      plot_kind: metrics
+      scale: linear

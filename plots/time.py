@@ -16,10 +16,11 @@ class Plot(BasePlot):
         plot_data = []
 
         solvers = df['solver_name'].unique()
-        all_reduce_solvers = [solver for solver in solvers if 'all-reduce' in solver]
-        all_reduce_solvers.sort(key=lambda s: int(s.split('slurm_nodes=')[1].split(']')[0]))
+        solver_params = [solver for solver in solvers if 'ddp' in solver]
+        total_solver_params = [solver for solver in solvers if 'ddp' in solver]
+        total_solver_params.sort(key=lambda s: int(s.split('slurm_nodes=')[1].split(']')[0]))
 
-        for solver in all_reduce_solvers:
+        for solver in total_solver_params:
             solver_params = solver.split('[')[1]
             total_solvers = [s for s in solvers if solver_params in s]
 
