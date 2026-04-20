@@ -6,9 +6,12 @@ class Plot(BasePlot):
     name = "communication_ratio"
     type = "boxplot"
     options = {
+        "dataset": ...,
+        "display_method": ["all-reduce", "ddp", "both"],
     }
 
-    def plot(self, df):
+    def plot(self, df, dataset, display_method):
+        df = df[df['dataset_name'] == dataset]
         plot_data = []
 
         solvers = df['solver_name'].unique()
@@ -31,22 +34,24 @@ class Plot(BasePlot):
                 comm_times_ddp = [communication_times[i] - (run_times[i] - run_times_ddp[i]) for i in range(len(run_times_ddp))]
                 communication_ratio_ddp = [max(0, comm_time) / run_time for comm_time, run_time in zip(comm_times_ddp, run_times_ddp) if run_time > 0]
 
-                plot_data.append({
-                    "y": [communication_ratio],
-                    "x": [f"{n_nodes} nodes"],
-                    "label": dataset,
-                    "color": self.get_style(dataset)["color"],
-                })
-                plot_data.append({
-                    "y": [communication_ratio_ddp],
-                    "x": [f"{n_nodes} nodes (DDP)"],
-                    "label": f"{dataset}",
-                    "color": self.get_style(f"{dataset}")["color"],
-                })
+                if display_method in ["all-reduce", "both"]:
+                    plot_data.append({
+                        "y": [communication_ratio],
+                        "x": [f"{n_nodes} nodes"],
+                        "label": dataset,
+                        "color": self.get_style(dataset)["color"],
+                    })
+                if display_method in ["ddp", "both"]:
+                    plot_data.append({
+                        "y": [communication_ratio_ddp],
+                        "x": [f"{n_nodes} nodes (DDP)"],
+                        "label": f"{dataset}",
+                        "color": self.get_style(f"{dataset} (DDP)")["color"],
+                    })
 
         return plot_data
 
-    def get_metadata(self, df):
+    def get_metadata(self, df, dataset, display_method):
         return {
             "title": "Communication Ratio",
             "ylabel": "Communication Time (% of Total Time)",
