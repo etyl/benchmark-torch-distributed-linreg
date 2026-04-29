@@ -34,25 +34,28 @@ class Plot(BasePlot):
                 comm_times_ddp = [communication_times[i] - (run_times[i] - run_times_ddp[i]) for i in range(len(run_times_ddp))]
                 communication_ratio_ddp = [max(0, comm_time) / run_time for comm_time, run_time in zip(comm_times_ddp, run_times_ddp) if run_time > 0]
 
+                dataset_short = dataset.split('[')[0]
                 if display_method in ["all-reduce", "both"]:
                     plot_data.append({
                         "y": [communication_ratio],
                         "x": [f"{n_nodes} nodes"],
-                        "label": dataset,
-                        "color": self.get_style(dataset)["color"],
+                        "label": dataset_short,
+                        "color": self.get_style(dataset_short)["color"],
                     })
                 if display_method in ["ddp", "both"]:
                     plot_data.append({
                         "y": [communication_ratio_ddp],
                         "x": [f"{n_nodes} nodes (DDP)"],
-                        "label": f"{dataset}",
-                        "color": self.get_style(f"{dataset} (DDP)")["color"],
+                        "label": f"{dataset_short} (DDP)",
+                        "color": self.get_style(f"{dataset_short} (DDP)")["color"],
                     })
 
         return plot_data
 
     def get_metadata(self, df, dataset, display_method):
         return {
-            "title": "Communication Ratio",
+            "title": "",
             "ylabel": "Communication Time (% of Total Time)",
+            "showfliers": False,
+            "box_width": 0.6,
         }

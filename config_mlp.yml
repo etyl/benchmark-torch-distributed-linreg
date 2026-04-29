@@ -4,20 +4,20 @@ objective:
 
 dataset:
   mlp:
-    d: [2000, 4000]
-    layers: [1, 4]
+    d: [4000]
+    layers: [1, 16]
 
 solver:
   all-reduce:
-    local_batch_size: [10000]
+    local_batch_size: [12000]
     lr: [1e-3]
     slurm_nodes: [1, 2, 4, 8]
   all-reduce-nolock:
-    local_batch_size: [10000]
+    local_batch_size: [12000]
     lr: [1e-3]
     slurm_nodes: [1, 2, 4, 8]
   ddp:
-    local_batch_size: [10000]
+    local_batch_size: [12000]
     lr: [1e-3]
     slurm_nodes: [1, 2, 4, 8]
 
