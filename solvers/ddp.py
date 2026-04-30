@@ -85,11 +85,12 @@ class Solver(BaseSolver):
         k = 0
         stop_training = False
         while not stop_training:
-            for batch in dataloader:
+            for _ in range(200):
                 optim.zero_grad()
 
-                batch = [x.to(self.device) for x in batch]
-                loss, *_ = model(*batch)
+                X = torch.randn(self.local_batch_size, self.dataset.d, device=self.device)
+                Y = torch.randn_like(X)
+                loss, *_ = model(X, Y)
                 loss.backward()
 
                 optim.step()
