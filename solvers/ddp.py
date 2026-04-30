@@ -86,8 +86,6 @@ class Solver(BaseSolver):
         stop_training = False
         while not stop_training:
             for batch in dataloader:
-                print(f"Rank {dist.get_rank()} - Batch {k}")
-
                 optim.zero_grad()
 
                 batch = [x.to(self.device) for x in batch]

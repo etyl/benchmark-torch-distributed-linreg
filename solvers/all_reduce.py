@@ -17,8 +17,8 @@ def setup_distributed(device):
         os.environ["WORLD_SIZE"] = os.environ["SLURM_NTASKS"]
 
     # NCCL debugging environment variables
-    os.environ["NCCL_DEBUG"] = "INFO"
-    os.environ["NCCL_DEBUG_SUBSYS"] = "INIT,TUNING"
+    # os.environ["NCCL_DEBUG"] = "INFO"
+    # os.environ["NCCL_DEBUG_SUBSYS"] = "INIT,TUNING"
 
     # Check if dist is already initialized to avoid reinitialization
     if dist.is_initialized():
@@ -101,8 +101,6 @@ class Solver(BaseSolver):
         stop_training = False
         while not stop_training:
             for batch in dataloader:
-                print(f"Rank {dist.get_rank()} - Batch {k}")
-
                 optim.zero_grad()
 
                 batch = [x.to(self.device) for x in batch]

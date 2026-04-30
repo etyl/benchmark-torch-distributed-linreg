@@ -11,7 +11,7 @@ class MLPDataset(torch.utils.data.Dataset):
         self.W_linear = rng.randn(self.d, self.d)
 
     def __len__(self):
-        return 1_000_000_000
+        return 100_000_000
 
     def __getitem__(self, idx):
         if isinstance(idx, int):
