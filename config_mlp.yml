@@ -5,22 +5,22 @@ objective:
 dataset:
   mlp:
     d: [4000]
-    layers: [1]
+    layers: [1, 16]
 
 solver:
   all-reduce:
     local_batch_size: [12000]
     lr: [1e-3]
-    slurm_nodes: [1, 4]
+    slurm_nodes: [1, 2, 4, 8]
   all-reduce-nolock:
     local_batch_size: [12000]
     lr: [1e-3]
-    slurm_nodes: [1, 4]
+    slurm_nodes: [1, 2, 4, 8]
   ddp:
     local_batch_size: [12000]
     lr: [1e-3]
-    slurm_nodes: [1, 4]
+    slurm_nodes: [1, 2, 4, 8]
 
 parallel_config: config_parallel.yml
-n_repetitions: 1
+n_repetitions: 5
 timeout: 100000
